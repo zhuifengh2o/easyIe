@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="/Styles/global1.css" rel="stylesheet" type="text/css" />
+    <link href="/Styles/default.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+        body {
+            behavior: url(easyIe.htc);
+            height: 1000px;
+        }
+        a {
+            color: #fff;
+            font: bold 16px/28px Simsun;
+        }
+        a:hover {
+            color: #fff;
+            font: 16px/28px Simsun;
+        }
+        .fixetest {
+            position: fixed;
+            right: -10px;
+            top: 100px;
+            width: 100%;
+            background: #ff0000;
+        }
+        .divonhover {
+            background: #00f;
+        }
+        .bodyonhover {
+            background: #00ced1;
+        }
+        .ponhover {
+            color: #fff;
+        }
+        .png {
+            background: url(http://www.chemql.com/Images/Buildingwebsite/newbanner3.png) no-repeat;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="png">
+    </div>
+    <div class="btns">
+        <input type="button" value="插入元素" id="creatbtn" onclick="insertEle();" />ddddddddddddddddddddddddddd</div>
+    <div id="box-one">
+        <p class="con2" id="p1">1 </p>
+        <p class="con2">2 </p>
+        <p class="con2">3 </p>
+        <a href="#"><span>ddd</span>content</a>
+    </div>
+    <div class="fixetest">
+        dddd
+    </div>
+</body>
+<script type="text/javascript" src="http://cdn.staticfile.org/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $(document).delegate('*', 'mouseenter', function () {
+            var $domNow = $(this); //jquery对象转dom对象
+            var domNow = $domNow[0]; //jquery对象转dom对象
+            var classNow = domNow.tagName.toLowerCase() + "onhover";
+            $(this).addClass(classNow);
+        });
+        $(document).delegate('*', 'mouseleave', function () {
+            var $domNow = $(this);
+            var domNow = $domNow[0];
+            var classNow = domNow.tagName.toLowerCase() + "onhover";
+            $(this).removeClass(classNow);
+        });
+    })
+</script>
+</html>
