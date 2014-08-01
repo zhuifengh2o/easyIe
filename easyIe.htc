@@ -14,40 +14,62 @@
     var ie6Rgx = new RegExp("MSIE 6.0");
     var ie7Rgx = new RegExp("MSIE 7.0");
     var ie8Rgx = new RegExp("MSIE 8.0");
+    var ie9Rgx = new RegExp("MSIE 9.0");
     var isIE6 = ie6Rgx.test(userAgentNow);
     var isIE7 = ie7Rgx.test(userAgentNow);
     var isIE8 = ie8Rgx.test(userAgentNow);
-    if (isIE6||isIE7) {
-        try { document.execCommand('BackgroundImageCache', false, true); } catch (e) { };
-    };
+    var isIE9 = ie9Rgx.test(userAgentNow);
+    //html5元素支持开始
+    //需要在html页面的head里加上JS地址为http://html5shiv.googlecode.com/svn/trunk/html5.js相关文章http://www.cnblogs.com/jhti/archive/2011/07/13/2105039.html；增加canvas支持需要引入excanvas.compiled.js，相关文章http://blog.csdn.net/huang100qi/article/details/7698647(让IE8支持canvas功能);
+    //html5支持结束
     var jqueryScript = document.createElement("script");
     jqueryScript.type = "text/javascript";
     jqueryScript.src = "http://cdn.staticfile.org/jquery/1.7.2/jquery.min.js";
-    setTimeout(function () { doc.getElementsByTagName('body')[0].appendChild(jqueryScript); }, 5);
+    setTimeout(function () { doc.getElementsByTagName('head')[0].appendChild(jqueryScript); }, 5);
+    if (isIE6 || isIE7) {
+        try {
+            document.execCommand('BackgroundImageCache', false, true);
+            var fixedCommonScript = document.createElement("script");
+            fixedCommonScript.type = "text/javascript";
+            fixedCommonScript.text = "$(function(){if($('body').css('background-image')=='none'){$('body').css('background-image','url(about:blank)');};});";
+            setTimeout(function () {
+                doc.getElementsByTagName('body')[0].appendChild(fixedCommonScript);
+            }, 100);
+
+        } catch (e) { };
+    };
     if (isIE6) {
-        var hoverScript = document.createElement("script");
-        hoverScript.type = "text/javascript";
-        hoverScript.text = "$(document).delegate('*', 'mouseenter', function () {var $domNow = $(this);var domNow = $domNow[0]; var classNow = domNow.tagName.toLowerCase() + 'onhover';$(this).addClass(classNow);});$(document).delegate('*', 'mouseleave', function () {var $domNow = $(this);var domNow = $domNow[0];var classNow = domNow.tagName.toLowerCase() + 'onhover';$(this).removeClass(classNow);});";
-        setTimeout(function () {
-            doc.getElementsByTagName('body')[0].appendChild(hoverScript);
-        }, 10);
-        var pngScript = document.createElement("script");
-        pngScript.type = "text/javascript";
-        pngScript.src = "http://cdn.staticfile.org/dd_belatedpng/0.0.8/dd_belatedpng.min.js";//直接引用这段JS可能会由于这段没加载完，执行DD_belatePNG，发现没有这个函数,最好将这段JS放在自己站点总用绝对路径引用；
-        setTimeout(function () { 
-            doc.getElementsByTagName('body')[0].appendChild(pngScript)
-        }, 1);
-        var pngScriptFix = document.createElement("script");
-        pngScriptFix.type = "text/javascript";
-        pngScriptFix.text = "DD_belatedPNG.fix('img');"
-        setTimeout(function () {
-            doc.getElementsByTagName('body')[0].appendChild(pngScriptFix);
-        }, 60);
-    } 
+        try { 
+            var hoverScript = document.createElement("script");
+            hoverScript.type = "text/javascript";
+            hoverScript.text = "$(document).delegate('*', 'mouseenter', function () {var $domNow = $(this);var domNow = $domNow[0]; var classNow = domNow.tagName.toLowerCase() + 'onhover';$(this).addClass(classNow);});$(document).delegate('*', 'mouseleave', function () {var $domNow = $(this);var domNow = $domNow[0];var classNow = domNow.tagName.toLowerCase() + 'onhover';$(this).removeClass(classNow);});})";
+            setTimeout(function () {
+                doc.getElementsByTagName('body')[0].appendChild(hoverScript);
+            }, 100);
+            var pngScript = document.createElement("script");
+            pngScript.type = "text/javascript";
+            pngScript.src = "http://cdn.staticfile.org/dd_belatedpng/0.0.8/dd_belatedpng.min.js"; //直接引用这段JS可能会由于这段没加载完，执行DD_belatePNG，发现没有这个函数,最好将这段JS放在自己站点总用绝对路径引用；
+            setTimeout(function () {
+                doc.getElementsByTagName('head')[0].appendChild(pngScript)
+            }, 5);
+            var pngScriptFix = document.createElement("script");
+            pngScriptFix.type = "text/javascript";
+            pngScriptFix.text = "DD_belatedPNG.fix('img');"
+            setTimeout(function () {
+                doc.getElementsByTagName('body')[0].appendChild(pngScriptFix);
+            }, 100);
+        } catch (e) { }
+    }
     function parseStylesheets() {
         var sheets = doc.styleSheets, l = sheets.length;
 
         for (var i = 0; i < l; i++) {
+            var fixedSelect1 = "html";
+            var fixedStyle1 = "background-attachment:fixed;overflow-x:hidden;";
+            sheets[i].addRule(fixedSelect1, fixedStyle1);
+            var fixedSelect2 = "html body";
+            var fixedStyle2 = "background-attachment:fixed;overflow-x:hidden;";
+            sheets[i].addRule(fixedSelect2, fixedStyle2);
             parseStylesheet(sheets[i]);
         };
     };
@@ -62,61 +84,59 @@
         };
         try {
             var rules = (currentSheet = sheet).rules, rulesl = rules.length;
-            var hoverJsStylesheet = '';
             for (var j = 0; j < rulesl; j++) {
                 parseCSSRule(rules[j]);
             };
-            return hoverJsStylesheet;
         } catch (securityException) { };
     };
     function parseCSSRule(rule) {
         var select = rule.selectorText, style = rule.style.cssText.toLowerCase();
-        var t = style.match(/opacity:(|\s*)0.(\d+)/);
-        var newSelectAlpha = select;
-        if ((typeof (t) != "undefined") & (t != 0) & (t != null)) {
-            var style = "filter:alpha(opacity=" + t[2] * 10 + ");";
-            currentSheet.addRule(newSelectAlpha, style);
-        };
-        if ((/border-radius/).test(style) || (/linear-gradient/).test(style) || (/box-shadow/).test(style)) {//添加使IE支持圆角，渐变，阴影；
-            var styleradius = "behavior: url(/styles/PIE.htc)";
-            currentSheet.addRule(select, styleradius);
-        }
-        if (isIE6) {
-            if ((/png/).test(style)) {
-                var pngScriptFixeach = document.createElement("script");
-                pngScriptFixeach.type = "text/javascript";
-                pngScriptFixeach.text = "DD_belatedPNG.fix('"+select+"');";
-                setTimeout(function () {
-                    doc.getElementsByTagName('body')[0].appendChild(pngScriptFixeach)
-                }, 10);
-            }
-        }
-        if (isIE6 || isIE7) {
-            if ((/position:\sfixed/).test(style)) {
-                var fixedSelect1 = "* html";
-                var fixedStyle1 = "background-image:url(" + "about" + ":" + "blank);background-attachment:fixed;";
-                currentSheet.addRule(fixedSelect1, fixedStyle1);
-                var fixedSelect2 = "* html body";
-                var fixedStyle2 = "background-image:url(" + "about" + ":" + "blank);background-attachment:fixed;overflow-x:hidden;";
-                currentSheet.addRule(fixedSelect2, fixedStyle2);
-                if ((/bottom/).test(style)) {
-                    var bottomNum = (style).match(/(bottom:\s)+(\d+)/i)[2];
-                    var fixedStylenow = "position:absolute;top:expression(eval(document.documentElement.scrollTop+document.documentElement.clientHeight-this.offsetHeight-(parseInt(this.currentStyle.marginTop,10)||0)-(parseInt(this.currentStyle.marginBottom,10)||0)-" + bottomNum + "));"
-                    currentSheet.addRule(select, fixedStylenow);
-                } else {
-                if ((/top/).test(style)) {
-                    var topNum = (style).match(/(top:\s)+(\d+)/i)[2];
-                    var fixedStylenow = "position:absolute;top:expression(eval(document.documentElement.scrollTop+" + topNum + "));"
-                    currentSheet.addRule(select, fixedStylenow);
-                } else {
-                    var topNum = 0;
-                    var fixedStylenow = "position:absolute;top:expression(eval(document.documentElement.scrollTop+" + topNum + "));"
-                    currentSheet.addRule(select, fixedStylenow);
-                } 
-                }
+        if (!isIE9) {
+            var t = style.match(/opacity:(|\s*)0.(\d+)/);
+            var newSelectAlpha = select;
+            if ((typeof (t) != "undefined") & (t != 0) & (t != null)) {
+                var styleOpacity = "filter:alpha(opacity=" + t[2] * 10 + ");";
+                currentSheet.addRule(newSelectAlpha, styleOpacity);
             };
-        
-        
         }
-   };
+            if ((/border-radius/).test(style) || (/linear-gradient/).test(style) || (/box-shadow/).test(style)) {//添加使IE支持圆角，渐变，阴影；
+                var styleRadius = "behavior: url(/styles/PIE.htc)";
+                currentSheet.addRule(select, styleRadius);
+            }
+            if (isIE6) {
+                if ((/png/).test(style)) {
+                    var pngScriptFixeach = document.createElement("script");
+                    pngScriptFixeach.type = "text/javascript";
+                    pngScriptFixeach.text = "DD_belatedPNG.fix('" + select + "');";
+                    setTimeout(function () {
+                        doc.getElementsByTagName('body')[0].appendChild(pngScriptFixeach)
+                    }, 10);
+                }
+            }
+            if (isIE6) {
+                if ((/position:\sfixed/).test(style)) {
+                    if (!((/absolute/).test(style))) {
+                        styleAbsoute = "position:absolute";
+                        currentSheet.addRule(select, styleAbsoute);
+                    }
+                    if ((/bottom/).test(style)) {
+                        var bottomNum = (style).match(/(bottom:\s)+(\d+)/i)[2];
+                        var fixedStylenow = "top:expression(eval(document.documentElement.scrollTop+document.documentElement.clientHeight-this.offsetHeight-(parseInt(this.currentStyle.marginTop,10)||0)-(parseInt(this.currentStyle.marginBottom,10)||0)-" + bottomNum + "));"
+                        currentSheet.addRule(select, fixedStylenow);
+                    } else {
+                        if ((/top/).test(style)) {
+                            var topNum = (style).match(/(top:\s)+(\d+)/i)[2];
+                            var fixedStylenow = "top:expression(eval(document.documentElement.scrollTop+" + topNum + "));"
+                            currentSheet.addRule(select, fixedStylenow);
+                        } else {
+                            var topNum = 0;
+                            var fixedStylenow = "top:expression(eval(document.documentElement.scrollTop+" + topNum + "));"
+                            currentSheet.addRule(select, fixedStylenow);
+                        }
+                    }
+                };
+
+
+            }
+    };
 </script>
