@@ -1,6 +1,6 @@
 <attach event="ondocumentready" handler="easyIeSet">
 <script language="JScript">
-    //使用方法在样式表中加入样式最好用绝对路径:body{behavior:url(/styles/easyIe.htc);};
+    //使用方法将代码保存为easyIe.htc;在样式表中加入样式最好用绝对路径:body{behavior:url(/styles/easyIe.htc);};
     //1.ie6或7不缓存背景图片;
     //2.ie6,7,8不支持半透明效果;改后导致该dom出现overflow:hidden,特殊情况ie7下不支持半透明，用1像素半透明png平铺或直接pass掉；
     //3.ie6不支持hover效果;每个dom元素，当mouseenter的时候加上这个dom的名字（小写）和onhover的组合(例如：div鼠标放上后会追加样式divonhover,一开后会移除divonhover;样式表这么写div:hover,divonhover{font-weight:bold;}),速度比hover.htc要快几倍哦！
@@ -22,294 +22,294 @@
     //需要在html页面的head里加上JS地址为http://html5shiv.googlecode.com/svn/trunk/html5.js相关文章http://www.cnblogs.com/jhti/archive/2011/07/13/2105039.html；增加canvas支持需要引入excanvas.compiled.js，相关文章http://blog.csdn.net/huang100qi/article/details/7698647(让IE8支持canvas功能);
     //html5支持结束
 window['DD_belatedPNG'] = {
-	ns: 'DD_belatedPNG',
-	imgSize: {},
-	delay: 10,
-	nodesFixed: 0,
-	createVmlNameSpace: function () {
-		if (document.namespaces && !document.namespaces[this.ns]) {
-			document.namespaces.add(this.ns, 'urn:schemas-microsoft-com:vml');
-		}
-	},
-	createVmlStyleSheet: function () {
-		var screenStyleSheet, printStyleSheet;
-		screenStyleSheet =$("<style media='screen'></style>");
-		$("head").append(screenStyleSheet);
-		if (screenStyleSheet[0].styleSheet) {
-			screenStyleSheet = screenStyleSheet[0].styleSheet;
-			screenStyleSheet.addRule(this.ns + '\\:*', '{behavior:url(#default#VML)}');
-			screenStyleSheet.addRule(this.ns + '\\:shape', 'position:absolute;');
-			screenStyleSheet.addRule('img.' + this.ns + '_sizeFinder', 'behavior:none; border:none; position:absolute; z-index:-1; top:-10000px; visibility:hidden;'); /* large negative top value for avoiding vertical scrollbars for large images, suggested by James O'Brien, http://www.thanatopsic.org/hendrik/ */
-			this.screenStyleSheet = screenStyleSheet;
-			printStyleSheet = $("<style media='print'></style>");
-			$("head").prepend(printStyleSheet);
-			printStyleSheet = printStyleSheet[0].styleSheet;
-			printStyleSheet.addRule(this.ns + '\\:*', '{display: none !important;}');
-			printStyleSheet.addRule('img.' + this.ns + '_sizeFinder', '{display: none !important;}');
-		}
-	},
-	readPropertyChange: function () {
-		var el, display, v;
-		el = event.srcElement;
-		if (!el.vmlInitiated) {
-			return;
-		}
-		if (~event.propertyName.search('background') || (~event.propertyName.search('border'))) {
-			DD_belatedPNG.applyVML(el);
-		}
-		if (event.propertyName == 'style.display') {
-			display = (el.currentStyle.display == 'none') ? 'none' : 'block';
-			for (v in el.vml) {
-				if (el.vml.hasOwnProperty(v)) {
-					el.vml[v].shape.style.display = display;
-				}
-			}
-		}
-		if (~event.propertyName.search('filter')) {
-			DD_belatedPNG.vmlOpacity(el);
-		}
-	},
-	vmlOpacity: function (el) {
-		if (~el.currentStyle.filter.search('lpha')) {
-			var trans = el.currentStyle.filter;
-			trans = parseInt(trans.substring(trans.lastIndexOf('=')+1, trans.lastIndexOf(')')), 10)/100;
-			el.vml.color.shape.style.filter = el.currentStyle.filter; /* complete guesswork */
-			el.vml.image.fill.opacity = trans; /* complete guesswork */
-		}
-	},
-	handlePseudoHover: function (el) {
-		setTimeout(function () { /* wouldn't work as intended without setTimeout */
-			DD_belatedPNG.applyVML(el);
-		}, 1);
-	},
-	applyVML: function (el) {
-		el.runtimeStyle.cssText = '';
-		this.vmlFill(el);
-		this.vmlOffsets(el);
-		this.vmlOpacity(el);
-		if (el.isImg) {
-			this.copyImageBorders(el);
-		}
-	},
-	attachHandlers: function (el) {
-		var self, handlers, handler, moreForAs, a, h;
-		self = this;
-		handlers = {resize: 'vmlOffsets', move: 'vmlOffsets'};
-		if (el.nodeName == 'A') {
-			moreForAs = {mouseleave: 'handlePseudoHover', mouseenter: 'handlePseudoHover', focus: 'handlePseudoHover', blur: 'handlePseudoHover'};
-			for (a in moreForAs) {			
-				if (moreForAs.hasOwnProperty(a)) {
-					handlers[a] = moreForAs[a];
-				}
-			}
-		}
-		for (h in handlers) {
-			if (handlers.hasOwnProperty(h)) {
-				handler = function () {
-					self[handlers[h]](el);
-				};
-				el.attachEvent('on' + h, handler);
-			}
-		}
-		el.attachEvent('onpropertychange', this.readPropertyChange);
-	},
-	giveLayout: function (el) {
-		el.style.zoom = 1;
-		 if (el.currentStyle.position == 'static') {
-			    el.style.position = 'relative'
-		}
-	    },
-	copyImageBorders: function (el) {
-		var styles, s;
-		styles = {'borderStyle':true, 'borderWidth':true, 'borderColor':true};
-		for (s in styles) {
-			if (styles.hasOwnProperty(s)) {
-				el.vml.color.shape.style[s] = el.currentStyle[s];
-			}
-		}
-	},
-	vmlFill: function (el) {
-		if (!el.currentStyle) {
-			return;
-		} else {
-			var elStyle, noImg, lib, v, img, imgLoaded;
-			elStyle = el.currentStyle;
-		}
-		for (v in el.vml) {
-			if (el.vml.hasOwnProperty(v)) {
-				el.vml[v].shape.style.zIndex = elStyle.zIndex;
-			}
-		}
-		el.runtimeStyle.backgroundColor = '';
-		el.runtimeStyle.backgroundImage = '';
-		noImg = true;
-		if (elStyle.backgroundImage != 'none' || el.isImg) {
-			if (!el.isImg) {
-				el.vmlBg = elStyle.backgroundImage;
-				el.vmlBg = el.vmlBg.substr(5, el.vmlBg.lastIndexOf('")')-5);
-			}
-			else {
-				el.vmlBg = el.src;
-			}
-			lib = this;
-			if (!lib.imgSize[el.vmlBg]) { /* determine size of loaded image */
-				img = document.createElement('img');
-				lib.imgSize[el.vmlBg] = img;
-				img.className = lib.ns + '_sizeFinder';
-				img.runtimeStyle.cssText = 'behavior:none; position:absolute; left:-10000px; top:-10000px; border:none; margin:0; padding:0;'; /* make sure to set behavior to none to prevent accidental matching of the helper elements! */
-				imgLoaded = function () {
-					this.width = this.offsetWidth; /* weird cache-busting requirement! */
-					this.height = this.offsetHeight;
-					lib.vmlOffsets(el);
-				};
-				img.attachEvent('onload', imgLoaded);
-				img.src = el.vmlBg;
-				img.removeAttribute('width');
-				img.removeAttribute('height');
-				$("body").prepend($(img));
-			}
-			el.vml.image.fill.src = el.vmlBg;
-			noImg = false;
-		}
-		el.vml.image.fill.on = !noImg;
-		el.vml.image.fill.color = 'none';
-		el.vml.color.shape.style.backgroundColor = elStyle.backgroundColor;
-		el.runtimeStyle.backgroundImage = 'none';
-		el.runtimeStyle.backgroundColor = 'transparent';
-	},
-	vmlOffsets: function (el) {
-		var thisStyle, size, fudge, makeVisible, bg, bgR, dC, altC, b, c, v;
-		thisStyle = el.currentStyle;
-		size = {'W':el.clientWidth+1, 'H':el.clientHeight+1, 'w':this.imgSize[el.vmlBg].width, 'h':this.imgSize[el.vmlBg].height, 'L':el.offsetLeft, 'T':el.offsetTop, 'bLW':el.clientLeft, 'bTW':el.clientTop};
-		fudge = (size.L + size.bLW == 1) ? 1 : 0;
-		makeVisible = function (vml, l, t, w, h, o) {
-			vml.coordsize = w+','+h;
-			vml.coordorigin = o+','+o;
-			vml.path = 'm0,0l'+w+',0l'+w+','+h+'l0,'+h+' xe';
-			vml.style.width = w + 'px';
-			vml.style.height = h + 'px';
-			vml.style.left = l + 'px';
-			vml.style.top = t + 'px';
-		};
-		makeVisible(el.vml.color.shape, (size.L + (el.isImg ? 0 : size.bLW)), (size.T + (el.isImg ? 0 : size.bTW)), (size.W-1), (size.H-1), 0);
-		makeVisible(el.vml.image.shape, (size.L + size.bLW), (size.T + size.bTW), (size.W), (size.H), 1 );
-		bg = {'X':0, 'Y':0};
-		if (el.isImg) {
-			bg.X = parseInt(thisStyle.paddingLeft, 10) + 1;
-			bg.Y = parseInt(thisStyle.paddingTop, 10) + 1;
-		}
-		else {
-			for (b in bg) {
-				if (bg.hasOwnProperty(b)) {
-					this.figurePercentage(bg, size, b, thisStyle['backgroundPosition'+b]);
-				}
-			}
-		}
-		el.vml.image.fill.position = (bg.X/size.W) + ',' + (bg.Y/size.H);
-		bgR = thisStyle.backgroundRepeat;
-		dC = {'T':1, 'R':size.W+fudge, 'B':size.H, 'L':1+fudge}; 
-		altC = { 'X': {'b1': 'L', 'b2': 'R', 'd': 'W'}, 'Y': {'b1': 'T', 'b2': 'B', 'd': 'H'} };
-		if (bgR != 'repeat' || el.isImg) {
-			c = {'T':(bg.Y), 'R':(bg.X+size.w), 'B':(bg.Y+size.h), 'L':(bg.X)}; /* these are defaults for no-repeat - clips down to the image location */
-			if (~bgR.search('repeat-')) { /* now let's revert to dC for repeat-x or repeat-y */
-				v = bgR.split('repeat-')[1].toUpperCase();
-				c[altC[v].b1] = 1;
-				c[altC[v].b2] = size[altC[v].d];
-			}
-			if (c.B > size.H) {
-				c.B = size.H;
-			}
-			el.vml.image.shape.style.clip = 'rect('+c.T+'px '+(c.R+fudge)+'px '+c.B+'px '+(c.L+fudge)+'px)';
-		}
-		else {
-			el.vml.image.shape.style.clip = 'rect('+dC.T+'px '+dC.R+'px '+dC.B+'px '+dC.L+'px)';
-		}
-	},
-	figurePercentage: function (bg, size, axis, position) {
-		var horizontal, fraction;
-		fraction = true;
-		horizontal = (axis == 'X');
-		switch(position) {
-			case 'left':
-			case 'top':
-				bg[axis] = 0;
-				break;
-			case 'center':
-				bg[axis] = 0.5;
-				break;
-			case 'right':
-			case 'bottom':
-				bg[axis] = 1;
-				break;
-			default:
-				if (position.search('%') != -1) {
-					bg[axis] = parseInt(position, 10) / 100;
-				}
-				else {
-					fraction = false;
-				}
-		}
-		bg[axis] = Math.ceil(  fraction ? ( (size[horizontal?'W': 'H'] * bg[axis]) - (size[horizontal?'w': 'h'] * bg[axis]) ) : parseInt(position, 10)  );
-		if (bg[axis] % 2 === 0) {
-			bg[axis]++;
-		}
-		return bg[axis];
-	},
-	fixPng: function (el) {
-		el.style.behavior = 'none';
-		var lib, els, nodeStr, v, e;
-		if (el.nodeName == 'BODY' || el.nodeName == 'TD' || el.nodeName == 'TR') { /* elements not supported yet */
-			return;
-		}
-		el.isImg = false;
-		if (el.nodeName == 'IMG') {
-			if(/\.png(?:\W|$)/.test(el.src.toLowerCase())) {
-				el.isImg = true;
-				el.style.visibility = 'hidden';
-			}
-			else {
-				return;
-			}
-		}
-		else if (el.currentStyle.backgroundImage.toLowerCase().search('.png') == -1) {
-			return;
-		}
-		lib = DD_belatedPNG;
-		el.vml = {color: {}, image: {}};
-		els = {shape: {}, fill: {}};
-		for (v in el.vml) {
-			if (el.vml.hasOwnProperty(v)) {
-				for (e in els) {
-					if (els.hasOwnProperty(e)) {
-						nodeStr = lib.ns + ':' + e;
-						el.vml[v][e] = document.createElement(nodeStr);
-					}
-				}
-				el.vml[v].shape.stroked = false;
-				el.vml[v].shape.appendChild(el.vml[v].fill);
-				el.parentNode.insertBefore(el.vml[v].shape, el);
-			}
-		}
-		el.vml.image.shape.fillcolor = 'none'; /* Don't show blank white shapeangle when waiting for image to load. */
-		el.vml.image.fill.type = 'tile'; /* Makes image show up. */
-		el.vml.color.fill.on = false; /* Actually going to apply vml element's style.backgroundColor, so hide the whiteness. */
-		lib.attachHandlers(el);
-		lib.giveLayout(el);
-		lib.giveLayout(el.offsetParent);
-		el.vmlInitiated = true;
-		lib.applyVML(el); /* Render! */
-	},
-	/**
-	* This is the method to use in a document.
-	* @param {String} selector - REQUIRED - a CSS selector, such as '#doc .container'
-	**/
-	fix: function (selectors) {
-		if (this.screenStyleSheet) {
-			for (var i in selectors) {
-				this.screenStyleSheet.addRule(selectors[i], 'behavior:expression(DD_belatedPNG.fixPng(this))'); /* seems to execute the function without adding it to the stylesheet - interesting... */
-			}
-		}
-	}
+        ns: 'DD_belatedPNG',
+        imgSize: {},
+        delay: 10,
+        nodesFixed: 0,
+        createVmlNameSpace: function () {
+                if (document.namespaces && !document.namespaces[this.ns]) {
+                        document.namespaces.add(this.ns, 'urn:schemas-microsoft-com:vml');
+                }
+        },
+        createVmlStyleSheet: function () {
+                var screenStyleSheet, printStyleSheet;
+                screenStyleSheet =$("<style media='screen'></style>");
+                $("head").append(screenStyleSheet);
+                if (screenStyleSheet[0].styleSheet) {
+                        screenStyleSheet = screenStyleSheet[0].styleSheet;
+                        screenStyleSheet.addRule(this.ns + '\\:*', '{behavior:url(#default#VML)}');
+                        screenStyleSheet.addRule(this.ns + '\\:shape', 'position:absolute;');
+                        screenStyleSheet.addRule('img.' + this.ns + '_sizeFinder', 'behavior:none; border:none; position:absolute; z-index:-1; top:-10000px; visibility:hidden;'); /* large negative top value for avoiding vertical scrollbars for large images, suggested by James O'Brien, http://www.thanatopsic.org/hendrik/ */
+                        this.screenStyleSheet = screenStyleSheet;
+                        printStyleSheet = $("<style media='print'></style>");
+                        $("head").prepend(printStyleSheet);
+                        printStyleSheet = printStyleSheet[0].styleSheet;
+                        printStyleSheet.addRule(this.ns + '\\:*', '{display: none !important;}');
+                        printStyleSheet.addRule('img.' + this.ns + '_sizeFinder', '{display: none !important;}');
+                }
+        },
+        readPropertyChange: function () {
+                var el, display, v;
+                el = event.srcElement;
+                if (!el.vmlInitiated) {
+                        return;
+                }
+                if (~event.propertyName.search('background') || (~event.propertyName.search('border'))) {
+                        DD_belatedPNG.applyVML(el);
+                }
+                if (event.propertyName == 'style.display') {
+                        display = (el.currentStyle.display == 'none') ? 'none' : 'block';
+                        for (v in el.vml) {
+                                if (el.vml.hasOwnProperty(v)) {
+                                        el.vml[v].shape.style.display = display;
+                                }
+                        }
+                }
+                if (~event.propertyName.search('filter')) {
+                        DD_belatedPNG.vmlOpacity(el);
+                }
+        },
+        vmlOpacity: function (el) {
+                if (~el.currentStyle.filter.search('lpha')) {
+                        var trans = el.currentStyle.filter;
+                        trans = parseInt(trans.substring(trans.lastIndexOf('=')+1, trans.lastIndexOf(')')), 10)/100;
+                        el.vml.color.shape.style.filter = el.currentStyle.filter; /* complete guesswork */
+                        el.vml.image.fill.opacity = trans; /* complete guesswork */
+                }
+        },
+        handlePseudoHover: function (el) {
+                setTimeout(function () { /* wouldn't work as intended without setTimeout */
+                        DD_belatedPNG.applyVML(el);
+                }, 1);
+        },
+        applyVML: function (el) {
+                el.runtimeStyle.cssText = '';
+                this.vmlFill(el);
+                this.vmlOffsets(el);
+                this.vmlOpacity(el);
+                if (el.isImg) {
+                        this.copyImageBorders(el);
+                }
+        },
+        attachHandlers: function (el) {
+                var self, handlers, handler, moreForAs, a, h;
+                self = this;
+                handlers = {resize: 'vmlOffsets', move: 'vmlOffsets'};
+                if (el.nodeName == 'A') {
+                        moreForAs = {mouseleave: 'handlePseudoHover', mouseenter: 'handlePseudoHover', focus: 'handlePseudoHover', blur: 'handlePseudoHover'};
+                        for (a in moreForAs) {                        
+                                if (moreForAs.hasOwnProperty(a)) {
+                                        handlers[a] = moreForAs[a];
+                                }
+                        }
+                }
+                for (h in handlers) {
+                        if (handlers.hasOwnProperty(h)) {
+                                handler = function () {
+                                        self[handlers[h]](el);
+                                };
+                                el.attachEvent('on' + h, handler);
+                        }
+                }
+                el.attachEvent('onpropertychange', this.readPropertyChange);
+        },
+        giveLayout: function (el) {
+                el.style.zoom = 1;
+                 if (el.currentStyle.position == 'static') {
+                            el.style.position = 'relative'
+                }
+            },
+        copyImageBorders: function (el) {
+                var styles, s;
+                styles = {'borderStyle':true, 'borderWidth':true, 'borderColor':true};
+                for (s in styles) {
+                        if (styles.hasOwnProperty(s)) {
+                                el.vml.color.shape.style[s] = el.currentStyle[s];
+                        }
+                }
+        },
+        vmlFill: function (el) {
+                if (!el.currentStyle) {
+                        return;
+                } else {
+                        var elStyle, noImg, lib, v, img, imgLoaded;
+                        elStyle = el.currentStyle;
+                }
+                for (v in el.vml) {
+                        if (el.vml.hasOwnProperty(v)) {
+                                el.vml[v].shape.style.zIndex = elStyle.zIndex;
+                        }
+                }
+                el.runtimeStyle.backgroundColor = '';
+                el.runtimeStyle.backgroundImage = '';
+                noImg = true;
+                if (elStyle.backgroundImage != 'none' || el.isImg) {
+                        if (!el.isImg) {
+                                el.vmlBg = elStyle.backgroundImage;
+                                el.vmlBg = el.vmlBg.substr(5, el.vmlBg.lastIndexOf('")')-5);
+                        }
+                        else {
+                                el.vmlBg = el.src;
+                        }
+                        lib = this;
+                        if (!lib.imgSize[el.vmlBg]) { /* determine size of loaded image */
+                                img = document.createElement('img');
+                                lib.imgSize[el.vmlBg] = img;
+                                img.className = lib.ns + '_sizeFinder';
+                                img.runtimeStyle.cssText = 'behavior:none; position:absolute; left:-10000px; top:-10000px; border:none; margin:0; padding:0;'; /* make sure to set behavior to none to prevent accidental matching of the helper elements! */
+                                imgLoaded = function () {
+                                        this.width = this.offsetWidth; /* weird cache-busting requirement! */
+                                        this.height = this.offsetHeight;
+                                        lib.vmlOffsets(el);
+                                };
+                                img.attachEvent('onload', imgLoaded);
+                                img.src = el.vmlBg;
+                                img.removeAttribute('width');
+                                img.removeAttribute('height');
+                                $("body").prepend($(img));
+                        }
+                        el.vml.image.fill.src = el.vmlBg;
+                        noImg = false;
+                }
+                el.vml.image.fill.on = !noImg;
+                el.vml.image.fill.color = 'none';
+                el.vml.color.shape.style.backgroundColor = elStyle.backgroundColor;
+                el.runtimeStyle.backgroundImage = 'none';
+                el.runtimeStyle.backgroundColor = 'transparent';
+        },
+        vmlOffsets: function (el) {
+                var thisStyle, size, fudge, makeVisible, bg, bgR, dC, altC, b, c, v;
+                thisStyle = el.currentStyle;
+                size = {'W':el.clientWidth+1, 'H':el.clientHeight+1, 'w':this.imgSize[el.vmlBg].width, 'h':this.imgSize[el.vmlBg].height, 'L':el.offsetLeft, 'T':el.offsetTop, 'bLW':el.clientLeft, 'bTW':el.clientTop};
+                fudge = (size.L + size.bLW == 1) ? 1 : 0;
+                makeVisible = function (vml, l, t, w, h, o) {
+                        vml.coordsize = w+','+h;
+                        vml.coordorigin = o+','+o;
+                        vml.path = 'm0,0l'+w+',0l'+w+','+h+'l0,'+h+' xe';
+                        vml.style.width = w + 'px';
+                        vml.style.height = h + 'px';
+                        vml.style.left = l + 'px';
+                        vml.style.top = t + 'px';
+                };
+                makeVisible(el.vml.color.shape, (size.L + (el.isImg ? 0 : size.bLW)), (size.T + (el.isImg ? 0 : size.bTW)), (size.W-1), (size.H-1), 0);
+                makeVisible(el.vml.image.shape, (size.L + size.bLW), (size.T + size.bTW), (size.W), (size.H), 1 );
+                bg = {'X':0, 'Y':0};
+                if (el.isImg) {
+                        bg.X = parseInt(thisStyle.paddingLeft, 10) + 1;
+                        bg.Y = parseInt(thisStyle.paddingTop, 10) + 1;
+                }
+                else {
+                        for (b in bg) {
+                                if (bg.hasOwnProperty(b)) {
+                                        this.figurePercentage(bg, size, b, thisStyle['backgroundPosition'+b]);
+                                }
+                        }
+                }
+                el.vml.image.fill.position = (bg.X/size.W) + ',' + (bg.Y/size.H);
+                bgR = thisStyle.backgroundRepeat;
+                dC = {'T':1, 'R':size.W+fudge, 'B':size.H, 'L':1+fudge}; 
+                altC = { 'X': {'b1': 'L', 'b2': 'R', 'd': 'W'}, 'Y': {'b1': 'T', 'b2': 'B', 'd': 'H'} };
+                if (bgR != 'repeat' || el.isImg) {
+                        c = {'T':(bg.Y), 'R':(bg.X+size.w), 'B':(bg.Y+size.h), 'L':(bg.X)}; /* these are defaults for no-repeat - clips down to the image location */
+                        if (~bgR.search('repeat-')) { /* now let's revert to dC for repeat-x or repeat-y */
+                                v = bgR.split('repeat-')[1].toUpperCase();
+                                c[altC[v].b1] = 1;
+                                c[altC[v].b2] = size[altC[v].d];
+                        }
+                        if (c.B > size.H) {
+                                c.B = size.H;
+                        }
+                        el.vml.image.shape.style.clip = 'rect('+c.T+'px '+(c.R+fudge)+'px '+c.B+'px '+(c.L+fudge)+'px)';
+                }
+                else {
+                        el.vml.image.shape.style.clip = 'rect('+dC.T+'px '+dC.R+'px '+dC.B+'px '+dC.L+'px)';
+                }
+        },
+        figurePercentage: function (bg, size, axis, position) {
+                var horizontal, fraction;
+                fraction = true;
+                horizontal = (axis == 'X');
+                switch(position) {
+                        case 'left':
+                        case 'top':
+                                bg[axis] = 0;
+                                break;
+                        case 'center':
+                                bg[axis] = 0.5;
+                                break;
+                        case 'right':
+                        case 'bottom':
+                                bg[axis] = 1;
+                                break;
+                        default:
+                                if (position.search('%') != -1) {
+                                        bg[axis] = parseInt(position, 10) / 100;
+                                }
+                                else {
+                                        fraction = false;
+                                }
+                }
+                bg[axis] = Math.ceil(  fraction ? ( (size[horizontal?'W': 'H'] * bg[axis]) - (size[horizontal?'w': 'h'] * bg[axis]) ) : parseInt(position, 10)  );
+                if (bg[axis] % 2 === 0) {
+                        bg[axis]++;
+                }
+                return bg[axis];
+        },
+        fixPng: function (el) {
+                el.style.behavior = 'none';
+                var lib, els, nodeStr, v, e;
+                if (el.nodeName == 'BODY' || el.nodeName == 'TD' || el.nodeName == 'TR') { /* elements not supported yet */
+                        return;
+                }
+                el.isImg = false;
+                if (el.nodeName == 'IMG') {
+                        if(/\.png(?:\W|$)/.test(el.src.toLowerCase())) {
+                                el.isImg = true;
+                                el.style.visibility = 'hidden';
+                        }
+                        else {
+                                return;
+                        }
+                }
+                else if (el.currentStyle.backgroundImage.toLowerCase().search('.png') == -1) {
+                        return;
+                }
+                lib = DD_belatedPNG;
+                el.vml = {color: {}, image: {}};
+                els = {shape: {}, fill: {}};
+                for (v in el.vml) {
+                        if (el.vml.hasOwnProperty(v)) {
+                                for (e in els) {
+                                        if (els.hasOwnProperty(e)) {
+                                                nodeStr = lib.ns + ':' + e;
+                                                el.vml[v][e] = document.createElement(nodeStr);
+                                        }
+                                }
+                                el.vml[v].shape.stroked = false;
+                                el.vml[v].shape.appendChild(el.vml[v].fill);
+                                el.parentNode.insertBefore(el.vml[v].shape, el);
+                        }
+                }
+                el.vml.image.shape.fillcolor = 'none'; /* Don't show blank white shapeangle when waiting for image to load. */
+                el.vml.image.fill.type = 'tile'; /* Makes image show up. */
+                el.vml.color.fill.on = false; /* Actually going to apply vml element's style.backgroundColor, so hide the whiteness. */
+                lib.attachHandlers(el);
+                lib.giveLayout(el);
+                lib.giveLayout(el.offsetParent);
+                el.vmlInitiated = true;
+                lib.applyVML(el); /* Render! */
+        },
+        /**
+        * This is the method to use in a document.
+        * @param {String} selector - REQUIRED - a CSS selector, such as '#doc .container'
+        **/
+        fix: function (selectors) {
+                if (this.screenStyleSheet) {
+                        for (var i in selectors) {
+                                this.screenStyleSheet.addRule(selectors[i], 'behavior:expression(DD_belatedPNG.fixPng(this))'); /* seems to execute the function without adding it to the stylesheet - interesting... */
+                        }
+                }
+        }
 };
 function easyIeLoadScript(url, callback){
     var script = document.createElement ("script")
@@ -325,104 +325,111 @@ function easyIeLoadScript(url, callback){
 }
 
 window['easyIeReset']=function(){
-	DD_belatedPNG.createVmlNameSpace();
-	DD_belatedPNG.createVmlStyleSheet();
-	var objReset=new Object();
-	objReset.pngFixed=new Array();
-	objReset.Fixed=new Array();
+	if(isIE6){
+		try{
+		DD_belatedPNG.createVmlNameSpace();
+		DD_belatedPNG.createVmlStyleSheet();
+		} catch (e){};
+	}
+        var objReset=new Object();
+        objReset.pngFixed=new Array();
+        objReset.Fixed=new Array();
     var easyIeBgImgCache=function(){//设置背景缓存 ie6和ie7需要设置
-	try{document.execCommand('BackgroundImageCache', false, true);} catch (e){};
+        try{document.execCommand('BackgroundImageCache', false, true);} catch (e){};
     }
 
     var easyIeFixedBg=function(){//fixed的时候需要设置body背景
-		if($('body').css('background-image')=='none'){$('body').css('background-image','url(about:blank)');}
-		if($('html').css('background-image')=='none'){$('html').css('background-image','url(about:blank)');}
-		$("head").append("<style type='text/css'>html,body{background-attachment:fixed;overflow-x:hidden;}</style>")
-	}
-
+                if($('body').css('background-image')=='none'){$('body').css('background-image','url(about:blank)');}
+                if($('html').css('background-image')=='none'){$('html').css('background-image','url(about:blank)');}
+                $("head").append("<style type='text/css'>html,body{background-attachment:fixed;overflow-x:hidden;}</style>")
+        }
     var easyIehover=function(){//ie6不支持hover
-	$("html").delegate('*', 'mouseenter', function () {if($(this)[0].tagName.toLowerCase=='a'){return;};$(this).addClass($(this)[0].tagName.toLowerCase()+'onhover');});
-	$("html").delegate('*', 'mouseleave', function () {if($(this)[0].tagName.toLowerCase=='a'){return;};$(this).removeClass($(this)[0].tagName.toLowerCase()+'onhover');});
+        $("html").delegate('*', 'mouseenter', function () {if($(this)[0].tagName.toLowerCase=='a'){return;};$(this).addClass($(this)[0].tagName.toLowerCase()+'onhover');});
+        $("html").delegate('*', 'mouseleave', function () {if($(this)[0].tagName.toLowerCase=='a'){return;};$(this).removeClass($(this)[0].tagName.toLowerCase()+'onhover');});
     }
-	parseStylesheets();
-	    if (isIE6) {
-		    easyIeBgImgCache();
-		    easyIehover();
-		    easyIeFixedBg();
-		    objReset.pngFixed.push("img");
-		    DD_belatedPNG.fix(objReset.pngFixed);
-	    }
-	if (isIE7) {
-		easyIeBgImgCache();
-	    };
-	    function parseStylesheets() {
-		var sheets = doc.styleSheets, l = sheets.length;
-		for (var i = 0; i < l; i++) {
-		    parseStylesheet(sheets[i]);
-		};
-	    };
-	    function parseStylesheet(sheet) {
-	    /***imports不考虑imports导入样式现在都为link引入；如果有导入样式，建议改为link引入
-		if (sheet.imports) {
-		    try {
-			var imports = sheet.imports, l = imports.length;
-			for (var i = 0; i < l; i++) {
-			    parseStylesheet(sheet.imports[i]);
-			};
-		    } catch (securityException) { };
-		};***/
-		try {
-		    var rules = (currentSheet = sheet).rules, rulesl = rules.length;
-		    for (var j = 0; j < rulesl; j++) {
-			parseCSSRule(rules[j]);
-		    };
-		} catch (securityException) { };
-	    };
-	    function parseCSSRule(rule) {
-		var select = rule.selectorText, style = rule.style.cssText.toLowerCase();
-		if (!isIE9) {
-		    var t = style.match(/opacity:(|\s*)0.(\d+)/);
-		    var newSelectAlpha = select;
-		    if ((typeof (t) != "undefined") & (t != 0) & (t != null)) {
-			var styleOpacity = "filter:alpha(opacity=" + t[2] * 10 + ");";
-			currentSheet.addRule(newSelectAlpha, styleOpacity);
-		    };
-		}
-		    if (~style.indexOf('border-radius') ||(~style.indexOf('linear-gradient')) || (~style.indexOf('box-shadow'))) {//添加使IE支持圆角，渐变，阴影；
-			var styleRadius = "behavior: url(styles/PIE.htc)";
-			currentSheet.addRule(select, styleRadius);
-		    }
-		    if (isIE6) {
-			if ((/png/).test(style)) {
-			objReset.pngFixed.push(select);
-			}
-		    }
-		    if (isIE6) {
-			if ((/position:\sfixed/).test(style)) {
-			    if (!((/absolute/).test(style))) {
-				styleAbsoute = "position:absolute";
-				currentSheet.addRule(select, styleAbsoute);
-			    }
-			    if ((/bottom/).test(style)) {
-				var bottomNum = (style).match(/(bottom:\s)+(\d+)/i)[2];
-				var fixedStylenow = "top:expression(eval(document.documentElement.scrollTop+document.documentElement.clientHeight-this.offsetHeight-(parseInt(this.currentStyle.marginTop,10)||0)-(parseInt(this.currentStyle.marginBottom,10)||0)-" + bottomNum + "));"
-				currentSheet.addRule(select, fixedStylenow);
-			    } else {
-				if ((/top/).test(style)) {
-				    var topNum = (style).match(/(top:\s)+(\d+)/i)[2];
-				    var fixedStylenow = "top:expression(eval(document.documentElement.scrollTop+" + topNum + "));"
-				    currentSheet.addRule(select, fixedStylenow);
-				} else {
-				    var topNum = 0;
-				    var fixedStylenow = "top:expression(eval(document.documentElement.scrollTop+" + topNum + "));"
-				    currentSheet.addRule(select, fixedStylenow);
-				}
-			    }
-			};
+
+        parseStylesheets();
+            if (isIE6) {
+                    easyIeBgImgCache();
+                    easyIehover();
+                    easyIeFixedBg();
+                    objReset.pngFixed.push("img");
+                    DD_belatedPNG.fix(objReset.pngFixed);
+            }
+        if (isIE7) {
+                easyIeBgImgCache();
+            };
+            function parseStylesheets() {
+
+                var sheets = doc.styleSheets, l = sheets.length;
+                for (var i = 0; i < l; i++) {
+                    parseStylesheet(sheets[i]);
+                };
+            };
+            function parseStylesheet(sheet) {
+            /***imports不考虑imports导入样式现在都为link引入；如果有导入样式，建议改为link引入
+                if (sheet.imports) {
+                    try {
+                        var imports = sheet.imports, l = imports.length;
+                        for (var i = 0; i < l; i++) {
+                            parseStylesheet(sheet.imports[i]);
+                        };
+                    } catch (securityException) { };
+                };***/
+                try {
+                    var rules = (currentSheet = sheet).rules, rulesl = rules.length;
+                    for (var j = 0; j < rulesl; j++) {
+
+                        parseCSSRule(rules[j]);
+                    };
+                } catch (securityException) { };
+            };
+            function parseCSSRule(rule) {
+                var select = rule.selectorText, style = rule.style.cssText.toLowerCase();
+                if (!isIE9) {
+                    var t = style.match(/opacity:(|\s*)0.(\d+)/);
+                    var newSelectAlpha = select;
+                    if ((typeof (t) != "undefined") & (t != 0) & (t != null)) {
+                        var styleOpacity = "filter:alpha(opacity=" + t[2] * 10 + ");";
+                        currentSheet.addRule(newSelectAlpha, styleOpacity);
+                    };
+                }
+
+                    if (~style.indexOf('border-radius') ||(~style.indexOf('linear-gradient')) || (~style.indexOf('box-shadow'))) {//添加使IE支持圆角，渐变，阴影；
+			var styleRadius = "behavior: url(/styles/PIE.htc)";
+                        currentSheet.addRule(select, styleRadius);
+                    }
+                    if (isIE6) {
+                        if ((/png/).test(style)) {
+                        objReset.pngFixed.push(select);
+                        }
+                    }
+                    if (isIE6) {
+                        if ((/position:\sfixed/).test(style)) {
+                            if (!((/absolute/).test(style))) {
+                                styleAbsoute = "position:absolute";
+                                currentSheet.addRule(select, styleAbsoute);
+                            }
+                            if ((/bottom/).test(style)) {
+                                var bottomNum = (style).match(/(bottom:\s)+(\d+)/i)[2];
+                                var fixedStylenow = "top:expression(eval(document.documentElement.scrollTop+document.documentElement.clientHeight-this.offsetHeight-(parseInt(this.currentStyle.marginTop,10)||0)-(parseInt(this.currentStyle.marginBottom,10)||0)-" + bottomNum + "));"
+                                currentSheet.addRule(select, fixedStylenow);
+                            } else {
+                                if ((/top/).test(style)) {
+                                    var topNum = (style).match(/(top:\s)+(\d+)/i)[2];
+                                    var fixedStylenow = "top:expression(eval(document.documentElement.scrollTop+" + topNum + "));"
+                                    currentSheet.addRule(select, fixedStylenow);
+                                } else {
+                                    var topNum = 0;
+                                    var fixedStylenow = "top:expression(eval(document.documentElement.scrollTop+" + topNum + "));"
+                                    currentSheet.addRule(select, fixedStylenow);
+                                }
+                            }
+                        };
 
 
-		    }
-	    };
+                    }
+            };
     }
    var easyIeSet=easyIeLoadScript('http://cdn.staticfile.org/jquery/1.7.2/jquery.min.js',easyIeReset);
 </script>
