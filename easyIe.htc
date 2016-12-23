@@ -5,7 +5,7 @@
     //2.ie6,7,8不支持半透明效果;改后导致该dom出现overflow:hidden,特殊情况ie7下不支持半透明，用1像素半透明png平铺或直接pass掉；
     //3.ie6不支持hover效果;每个dom元素，当mouseenter的时候加上这个dom的名字（小写）和onhover的组合(例如：div鼠标放上后会追加样式divonhover,一开后会移除divonhover;样式表这么写div:hover,divonhover{font-weight:bold;}),速度比hover.htc要快几倍哦！
     //4.ie6支持fixed;
-    //5.ie6支持PNG半透明效果;
+    //5.ie6支持PNG半透明效果;(在需要的dom元素上加样式.pngFixed,或者自定义DD_belatedPNG([class1,class2,class3]))
     //6.圆角线，性渐变，boxshadow需要引入PIE.htc,并在PIE所在文件夹里放入PIE_IE678js和PIE_9.js,查找behavior: url(/styles/PIE.htc)，路径为绝对路径；线性渐变需要在cssText里加入-pie-background: linear-gradient(#EEFF99, #66EE33);
     //authour:刘丕水,zhuifengh2o
     var currentSheet, doc = window.document;
@@ -21,6 +21,26 @@
     //html5元素支持开始
     //需要在html页面的head里加上JS地址为http://html5shiv.googlecode.com/svn/trunk/html5.js相关文章http://www.cnblogs.com/jhti/archive/2011/07/13/2105039.html；增加canvas支持需要引入excanvas.compiled.js，相关文章http://blog.csdn.net/huang100qi/article/details/7698647(让IE8支持canvas功能);
     //html5支持结束
+    var appendStyle=function(styleString){
+        var styleEleWp = element.document.createElement('div');
+        styleEleWp.innerHTML = "_<style type='text/css'>" + styleString + "</style>";
+        element.document.getElementsByTagName('head')[0].appendChild(styleEleWp.children[0]);
+        return styleEleWp.children[0];
+    }
+    var appendStyleMediaScreen=function(styleString){
+        var styleEleWp = element.document.createElement('div');
+        styleEleWp.innerHTML = "_<style media='screen'>" + styleString + "</style>";
+        var style=styleEleWp.children[0];
+        element.document.getElementsByTagName('head')[0].appendChild(style);
+        return style;
+    }
+    var prependStyleMediaPrint=function(styleString){
+        var styleEleWp = element.document.createElement('div');
+        styleEleWp.innerHTML = "_<style media='print'>" + styleString + "</style>";
+        var style=styleEleWp.children[0];
+        element.document.getElementsByTagName('head')[0].insertBefore(style, element.document.getElementsByTagName('head')[0].children[0]);
+        return style;
+    }
 window['DD_belatedPNG'] = {
         ns: 'DD_belatedPNG',
         imgSize: {},
@@ -33,17 +53,14 @@ window['DD_belatedPNG'] = {
         },
         createVmlStyleSheet: function () {
                 var screenStyleSheet, printStyleSheet;
-                screenStyleSheet =$("<style media='screen'></style>");
-                $("head").append(screenStyleSheet);
-                if (screenStyleSheet[0].styleSheet) {
-                        screenStyleSheet = screenStyleSheet[0].styleSheet;
+                screenStyleSheet =appendStyleMediaScreen('');
+                if (screenStyleSheet.styleSheet) {
+                        screenStyleSheet = screenStyleSheet.styleSheet;
                         screenStyleSheet.addRule(this.ns + '\\:*', '{behavior:url(#default#VML)}');
                         screenStyleSheet.addRule(this.ns + '\\:shape', 'position:absolute;');
                         screenStyleSheet.addRule('img.' + this.ns + '_sizeFinder', 'behavior:none; border:none; position:absolute; z-index:-1; top:-10000px; visibility:hidden;'); /* large negative top value for avoiding vertical scrollbars for large images, suggested by James O'Brien, http://www.thanatopsic.org/hendrik/ */
                         this.screenStyleSheet = screenStyleSheet;
-                        printStyleSheet = $("<style media='print'></style>");
-                        $("head").prepend(printStyleSheet);
-                        printStyleSheet = printStyleSheet[0].styleSheet;
+                        printStyleSheet = prependStyleMediaPrint('').styleSheet;
                         printStyleSheet.addRule(this.ns + '\\:*', '{display: none !important;}');
                         printStyleSheet.addRule('img.' + this.ns + '_sizeFinder', '{display: none !important;}');
                 }
@@ -97,7 +114,7 @@ window['DD_belatedPNG'] = {
                 handlers = {resize: 'vmlOffsets', move: 'vmlOffsets'};
                 if (el.nodeName == 'A') {
                         moreForAs = {mouseleave: 'handlePseudoHover', mouseenter: 'handlePseudoHover', focus: 'handlePseudoHover', blur: 'handlePseudoHover'};
-                        for (a in moreForAs) {                        
+                        for (a in moreForAs) {
                                 if (moreForAs.hasOwnProperty(a)) {
                                         handlers[a] = moreForAs[a];
                                 }
@@ -166,7 +183,7 @@ window['DD_belatedPNG'] = {
                                 img.src = el.vmlBg;
                                 img.removeAttribute('width');
                                 img.removeAttribute('height');
-                                $("body").prepend($(img));
+                                element.document.body.insertBefore(img,element.document.body.children[0]);
                         }
                         el.vml.image.fill.src = el.vmlBg;
                         noImg = false;
@@ -207,7 +224,7 @@ window['DD_belatedPNG'] = {
                 }
                 el.vml.image.fill.position = (bg.X/size.W) + ',' + (bg.Y/size.H);
                 bgR = thisStyle.backgroundRepeat;
-                dC = {'T':1, 'R':size.W+fudge, 'B':size.H, 'L':1+fudge}; 
+                dC = {'T':1, 'R':size.W+fudge, 'B':size.H, 'L':1+fudge};
                 altC = { 'X': {'b1': 'L', 'b2': 'R', 'd': 'W'}, 'Y': {'b1': 'T', 'b2': 'B', 'd': 'H'} };
                 if (bgR != 'repeat' || el.isImg) {
                         c = {'T':(bg.Y), 'R':(bg.X+size.w), 'B':(bg.Y+size.h), 'L':(bg.X)}; /* these are defaults for no-repeat - clips down to the image location */
@@ -306,13 +323,66 @@ window['DD_belatedPNG'] = {
         fix: function (selectors) {
                 if (this.screenStyleSheet) {
                         for (var i in selectors) {
-                                this.screenStyleSheet.addRule(selectors[i], 'behavior:expression(DD_belatedPNG.fixPng(this))'); /* seems to execute the function without adding it to the stylesheet - interesting... */
+                                try{this.screenStyleSheet.addRule(selectors[i], 'behavior:expression(DD_belatedPNG.fixPng(this))'); /* seems to execute the function without adding it to the stylesheet - interesting... */}catch(e){}
                         }
                 }
         }
 };
+var removeClass=function(){
+    if(typeof(this.tagName)!='undefined'){
+        var classNameTemp=' '+this.tagName.toLowerCase()+'onhover'+' ';
+        var regExpN=new RegExp(classNameTemp,'g');
+        var classNameN=' '+this.className+' ';
+        this.className=classNameN.replace(regExpN,' ');
+    }
+}
+var addClass=function(){
+    if(typeof(this.tagName)!='undefined'){
+        this.className=this.className+' '+this.tagName.toLowerCase()+'onhover';
+    }
+}
+var getTree=function(eleNode){
+    var treeNodes=new Array();
+    var getTreeFun=function(node){
+        if(eleNode==''){
+            treeNodes.push(element.document.body.parentNode);
+        }else if(node!=element.document){
+            treeNodes.push(node);
+            getTreeFun(node.parentNode);
+        }
+    }
+    getTreeFun(eleNode);
+    return treeNodes;
+}
+var getSameParent=function(ele1,ele2){
+    var treeEle1=getTree(ele1),sameParent='';
+    var findSame=function(node){
+        if(node!=element.document&&sameParent==''){
+            for(var x=0;x<treeEle1.length;x++){
+                if(node==treeEle1[x]){
+                    sameParent=node;
+                }
+            }
+            findSame(node.parentNode);
+        }
+    }
+    return sameParent;
+}
+var queryParent=function(eleParentNode,isAddClass,sameParent){
+    if(eleParentNode==''){
+        return;
+    }
+    if(eleParentNode!=sameParent){
+        if(isAddClass){
+            addClass.call(eleParentNode)
+        }else{
+            removeClass.call(eleParentNode);
+        }
+        queryParent(eleParentNode.parentNode,isAddClass);
+    }
+}
 function easyIeLoadScript(url, callback){
-    var script = document.createElement ("script")
+   var script = document.createElement ("script")
     script.type = "text/javascript";
         script.onreadystatechange = function(){
             if (script.readyState == "loaded" || script.readyState == "complete"){
@@ -325,12 +395,15 @@ function easyIeLoadScript(url, callback){
 }
 
 window['easyIeReset']=function(){
-	if(isIE6){
-		try{
-		DD_belatedPNG.createVmlNameSpace();
-		DD_belatedPNG.createVmlStyleSheet();
-		} catch (e){};
-	}
+        if(isIE6){
+            //注意
+            try{
+                DD_belatedPNG.createVmlNameSpace();
+                DD_belatedPNG.createVmlStyleSheet();
+            }catch(e){
+
+            }
+        }
         var objReset=new Object();
         objReset.pngFixed=new Array();
         objReset.Fixed=new Array();
@@ -339,13 +412,36 @@ window['easyIeReset']=function(){
     }
 
     var easyIeFixedBg=function(){//fixed的时候需要设置body背景
-                if($('body').css('background-image')=='none'){$('body').css('background-image','url(about:blank)');}
-                if($('html').css('background-image')=='none'){$('html').css('background-image','url(about:blank)');}
-                $("head").append("<style type='text/css'>html,body{background-attachment:fixed;overflow-x:hidden;}</style>")
+                if(element.document.body.style['backgroundImage']==''){element.document.body.style['backgroundImage']='url(about:blank)';}
+                if(element.document.body.parentNode.style['backgroundImage']==''){element.document.body.parentNode.style['backgroundImage']='url(about:blank)';}
+                appendStyle('html,body{background-attachment:fixed;overflow-x:hidden;}');
         }
     var easyIehover=function(){//ie6不支持hover
-        $("html").delegate('*', 'mouseenter', function () {if($(this)[0].tagName.toLowerCase=='a'){return;};$(this).addClass($(this)[0].tagName.toLowerCase()+'onhover');});
-        $("html").delegate('*', 'mouseleave', function () {if($(this)[0].tagName.toLowerCase=='a'){return;};$(this).removeClass($(this)[0].tagName.toLowerCase()+'onhover');});
+        var elBody=element.document.body,elHtml=element.document.body.parentNode;
+        elBody.attachEvent('onmouseenter',function(){
+            addClass.call(element.document.body);
+            addClass.call(element.document.body.parentNode);
+        });
+        elHtml.attachEvent('onmouseenter',function(){
+            addClass.call(element.document.body);
+            addClass.call(element.document.body.parentNode);
+        });
+        var targetOld=element.document,that=element.document;
+        elHtml.parentNode.attachEvent('onmousemove',function(e){
+            that=e.srcElement;
+                if(targetOld!=that){
+                    queryParent(targetOld,false,getSameParent(targetOld,that));
+                    queryParent(that,true,getSameParent(targetOld,that));
+                    targetOld=that;
+                }
+        });
+
+        elBody.attachEvent('onmouseleave',function(){
+            queryParent(targetOld,false,element.document);
+        });
+        elHtml.attachEvent('onmouseleave',function(){
+            queryParent(targetOld,false,element.document);
+        });
     }
 
         parseStylesheets();
@@ -353,12 +449,15 @@ window['easyIeReset']=function(){
                     easyIeBgImgCache();
                     easyIehover();
                     easyIeFixedBg();
-                    objReset.pngFixed.push("img");
-                    DD_belatedPNG.fix(objReset.pngFixed);
+                    /***
+                        objReset.pngFixed.push("img");
+                        DD_belatedPNG.fix(objReset.pngFixed);
+                    ***/
+                    DD_belatedPNG.fix(['img','.pngFixed']);
             }
-        if (isIE7) {
-                easyIeBgImgCache();
-            };
+            if (isIE7) {
+                    easyIeBgImgCache();
+                };
             function parseStylesheets() {
 
                 var sheets = doc.styleSheets, l = sheets.length;
@@ -396,7 +495,7 @@ window['easyIeReset']=function(){
                 }
 
                     if (~style.indexOf('border-radius') ||(~style.indexOf('linear-gradient')) || (~style.indexOf('box-shadow'))) {//添加使IE支持圆角，渐变，阴影；
-			var styleRadius = "behavior: url(/styles/PIE.htc)";
+                        var styleRadius = "behavior: url(/styles/PIE.htc)";
                         currentSheet.addRule(select, styleRadius);
                     }
                     if (isIE6) {
@@ -431,5 +530,5 @@ window['easyIeReset']=function(){
                     }
             };
     }
-   var easyIeSet=easyIeLoadScript('http://cdn.staticfile.org/jquery/1.7.2/jquery.min.js',easyIeReset);
+  var easyIeSet=function(){easyIeReset()};
 </script>
